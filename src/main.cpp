@@ -34,28 +34,3 @@ int main()
 	}
 	delete pathfindingDebug;
 }
-
-/*#include <mbed.h>
-#include <iostream>
-#include <vector>
-
-#include "PathfindingDebug.h"
-
-Serial pc(USBTX, USBRX);
-
-int main()
-{
-	pc.baud(9600);
-
-	PathfindingDebug pathfindingDebug;
-
-	while (1)
-	{
-		//std::cout << "bite" << std::endl;
-		pc.printf("%f\n", (float)10);
-
-		//pathfindingDebug.update();
-		//pathfindingDebug.Qtdisplay(pc);
-	}
-}
-*/
