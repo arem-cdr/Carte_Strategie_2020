@@ -4,10 +4,11 @@ import serial
 from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
 import numpy as np
+import time
 from math import *
 
 # init serial
-ser = serial.Serial('com8', 115200)
+ser = serial.Serial('com8', 2000000)
 L = []
 # Always start by initializing Qt (only once per application)
 app = QtGui.QApplication([])
@@ -15,21 +16,23 @@ app = QtGui.QApplication([])
 # Define a top-level widget to hold everything
 win = QtGui.QWidget()
 win.setWindowTitle("Interface Debug")
+pg.setConfigOptions(antialias=True)
 
-plot = pg.PlotWidget()
+layout = QtGui.QGridLayout()
+win.setLayout(layout)
+
+# plotpathfinding
+plotPathfinding = pg.PlotWidget()
+
+plotPathfinding.getPlotItem().setTitle("Pathfinding")
 
 # creation de la legende
 legend = pg.LegendItem(size=(100, 50), offset=(40, 10))
-legend.setParentItem(plot.graphicsItem())
-# 'pos': (current, current2), 'size': 10, 'pen': None, 'brush': 'g', 'symbol': 'o'
+legend.setParentItem(plotPathfinding.graphicsItem())
 legend.addItem(item=pg.ScatterPlotItem(pen=None, size=10, brush='g', symbol='o'),
                name="Obstacles")
 legend.addItem(item=pg.ScatterPlotItem(pen=None, size=35, brush='r', symbol='o'),
                name="Robot")
-
-plot.getPlotItem().setTitle("Pathfinding")
-layout = QtGui.QGridLayout()
-win.setLayout(layout)
 
 # creation des recepteurs de donnees
 DataObstacles = pg.ScatterPlotItem(pen=None, symbol='o',
@@ -38,15 +41,28 @@ DataPositionRobot = pg.ScatterPlotItem(pen=None, symbol='o',
                                        symbolPen=None, symbolBrush='r')
 DataTargetRobot = pg.ScatterPlotItem(pen=None, symbol='o',
                                      symbolPen=None, symbolBrush='r')
+linesRRT = []
+linesPath = []
 
-plot.addItem(DataObstacles)
-plot.addItem(DataPositionRobot)
-plot.addItem(DataTargetRobot)
+plotPathfinding.addItem(DataObstacles)
+plotPathfinding.addItem(DataPositionRobot)
+plotPathfinding.addItem(DataTargetRobot)
 
-plot.setXRange(0, 300)  # dimensions de la taille
-plot.setYRange(0, 200)
+plotPathfinding.setXRange(0, 300)  # dimensions de la taille
+plotPathfinding.setYRange(0, 200)
 
-layout.addWidget(plot)  # plot goes on right side, spanning 3 rows
+# plot goes on right side, spanning 3 rows
+layout.addWidget(plotPathfinding, 0, 0, 1, 1)
+
+# plot assez
+plotAsser = pg.PlotWidget()
+layout.addWidget(plotAsser, 0, 1, 1, 1)
+
+plotAsser.getPlotItem().setTitle("Asservissement")
+
+plotAsser.setXRange(0, 100)  # dimensions de la taille
+plotAsser.setYRange(0, 200)
+
 win.show()
 
 # variables diverses sur le robot
@@ -58,6 +74,8 @@ timeElapsedSinceBoot = 0
 printingInfo = False
 
 spots = []  # tableau utilisé pour l'affichage d'éléments
+beginTime = time.time() * 1000
+timeLastRefresh = time.time() * 1000
 
 while True:
     ser_bytes = ser.readline()
@@ -69,17 +87,27 @@ while True:
             print("Failed to convert string to float")
     L.insert(0, decoded_byte)
     if (decoded_byte == -1.0):  # -1 : fin d'une séquence
-
         if printingInfo:
             print(" ")
             print("debut sequence reception")
             print(L)
 
         State = "INIT"
-        linesRRT = []
-        linesPath = []
 
         while len(L) > 0:
+            # gestion de l'affichage
+            if time.time() * 1000 - timeLastRefresh > 100:
+                timeLastRefresh = time.time() * 1000
+                plotPathfinding.clear()
+
+                for i in range(0, len(linesPath)):
+                    plotPathfinding.addItem(linesPath[i])
+                plotPathfinding.addItem(DataObstacles)
+                plotPathfinding.addItem(DataPositionRobot)
+                plotPathfinding.addItem(DataTargetRobot)
+                for i in range(0, len(linesRRT)):
+                    plotPathfinding.addItem(linesRRT[i])
+
             # machine à etat sur la variable State
             if State == "INIT":
                 current = L.pop()
@@ -246,7 +274,6 @@ while True:
                     print("node count : ", current)
             elif State == "READING PATH":
                 current = L.pop()
-                # print(current)
                 if current == -1:  # fin de la séquence
                     State = "INIT"
                     if printingInfo:
@@ -272,21 +299,8 @@ while True:
                                     State = "INIT"
                                     L.append(current4)
                                 else:
-                                    # print(current2)
-                                    # print(current3)
-                                    # print(current4)
                                     linesPath.append(pg.LineSegmentROI(
                                         [[current, current2], [current3, current4]], pen=pg.mkPen('r', width=1)))
-
-        plot.clear()
-
-        for i in range(0, len(linesPath)):
-            plot.addItem(linesPath[i])
-        plot.addItem(DataObstacles)
-        plot.addItem(DataPositionRobot)
-        plot.addItem(DataTargetRobot)
-        for i in range(0, len(linesRRT)):
-            plot.addItem(linesRRT[i])
 
         L.clear()  # au cas où L ne soit pas vide, normalement c'est deja le cas
     QtGui.QApplication.processEvents()

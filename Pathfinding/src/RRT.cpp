@@ -283,7 +283,7 @@ void RRT::update(Point objectPos, Point target, const std::vector<Obstacle> &obs
 	}
 	else
 	{
-		generateTree(5, target, obstacles, radiusObject);
+		generateTree(50, target, obstacles, radiusObject);
 	}
 }
 

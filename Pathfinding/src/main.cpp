@@ -15,7 +15,7 @@ Serial pc(USBTX, USBRX);
 
 int main()
 {
-	pc.baud(115200);
+	pc.baud(2000000);
 
 	PathfindingDebug *pathfindingDebug = new PathfindingDebug(Vector2f(70.f, 40.f));
 	float timeAtWhileBegin = 0.f;
