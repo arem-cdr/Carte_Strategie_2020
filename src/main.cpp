@@ -9,8 +9,6 @@
 #include "PathfindingDebug.h"
 #include "Vector2f.h"
 
-// Bug trouvé : passer par pointeur pour pathfindingDebug
-
 Serial pc(USBTX, USBRX);
 
 int main()
