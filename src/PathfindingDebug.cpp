@@ -14,12 +14,17 @@ PathfindingDebug::PathfindingDebug(Point point) : MyRRT(point.getPos())
     obstacles.push_back(Obstacle(Vector2f(170.f, 130.f)));
     obstacles.push_back(Obstacle(Vector2f(110.f, 80.f)));
     obstacles.push_back(Obstacle(Vector2f(210.f, 130.f)));
+    obstacles.push_back(Obstacle(Vector2f(80.f, 70.f)));
+    obstacles.push_back(Obstacle(Vector2f(100.f, 140.f)));
+    obstacles.push_back(Obstacle(Vector2f(180.f, 50.f)));
 }
 
 void PathfindingDebug::update(float time)
 {
     // simulation du mouvement du robot
     pos = Vector2f(150.f + 110.f * sin(time * 0.00021f), 100.f + 75.f * cos(time * 0.0003f));
+
+    target = Vector2f(150.f - 110.f * sin(time * 0.00023f), 100.f + 75.f * cos(time * 0.0005f));
 
     this->time = time;
 
@@ -73,7 +78,7 @@ void PathfindingDebug::Qtdisplay(Serial *pc)
     {
         pc->printf("%f\n", (float)-102);
 
-        MyRRT.QtdisplayRRT(pc);
+        //MyRRT.QtdisplayRRT(pc);
 
         pc->printf("%f\n", (float)-1);
     }
