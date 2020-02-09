@@ -329,8 +329,6 @@ void RRT::display() const
 
 void RRT::QtdisplayRRT(Serial *pc) const
 {
-	//pc.printf("%f\n", (float)-102);
-
 	std::vector<Node *> toVisit = std::vector<Node *>();
 	toVisit.push_back(this->root);
 	Node *current;

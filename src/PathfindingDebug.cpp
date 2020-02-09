@@ -73,7 +73,7 @@ void PathfindingDebug::Qtdisplay(Serial *pc)
     {
         pc->printf("%f\n", (float)-102);
 
-        //MyRRT.QtdisplayRRT(pc);
+        MyRRT.QtdisplayRRT(pc);
 
         pc->printf("%f\n", (float)-1);
     }
